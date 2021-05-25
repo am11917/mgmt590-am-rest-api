@@ -6,7 +6,7 @@ name: CI
 on:
   push:
     branches:
-      - mgmt590-am-rest-api
+      - main
 
 name: Build and Deploy a Container
 env:
