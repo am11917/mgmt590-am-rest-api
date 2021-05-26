@@ -5,6 +5,19 @@ from flask import Flask
 from flask import request
 from flask import jsonify
 
+models = [
+          {
+          "name": "distilled-bert",
+          "tokenizer": "distilbert-base-uncased-distilled-squad",
+          "model": "distilbert-base-uncased-distilled-squad"
+          },
+          {
+          "name": "deepset-roberta",
+          "tokenizer": "deepset/roberta-base-squad2",
+          "model": "deepset/roberta-base-squad2"
+          }
+         ]
+
 # Create my flask app
 app = Flask(__name__)
 
@@ -15,8 +28,8 @@ def hello_world():
     return "<p>Hello World!</p>"
 
 @app.route("/models", methods=['GET'])
-def models():
-    ...
+def get_models():
+    return jsonify(models)
 
 # Define a handler for the /answer path, which
 # processes a JSON payload with a question and
