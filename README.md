@@ -22,4 +22,18 @@ This API allows you to answer your questions pulling out the information from th
 </details>
 
 ## Getting Started
-To get started locally 
+To get a local image of the code and running it locally on your machine
+
+### Prerequisites
+To run this application, you'll need the following pre-requisites installed on your machine
+
+| Syntax      | Version | Installation |
+| ----------- | ----------- | --------- |
+| Python | 3.9.1 or above  | <a href="https://www.python.org/downloads/"> Python </a> |
+| Flask   | 2.0.1        | `pip install flask` |
+| Transformers | 4.6.1 | `pip install transformers` |
+| SQLite | 2.6.0 | `pip install sqlite3` |
+| Docker Engine | NA | <a href="https://docs.docker.com/engine/"> Docker </a>|
+| Tensor Flow | 2.5.0 | `pip install --upgrade tensorflow` |
+| Pytorch | 1.8.1+cpu | `pip install torch` |
+
