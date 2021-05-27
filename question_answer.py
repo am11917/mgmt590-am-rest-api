@@ -3,6 +3,7 @@ import time
 import os
 import sqlite3
 from transformers.pipelines import pipeline
+from transformers import AutoModelForQuestionAnswering, AutoTokenizer
 from flask import Flask
 from flask import request
 from flask import jsonify
@@ -96,9 +97,12 @@ def question_answer():
     
     # Get the request body data
     data = request.json
-
+    
+    model = AutoModelForQuestionAnswering.from_pretrained(model_post)
+    tokenizer = AutoTokenizer.from_pretrained(model_post)
+          
     # Import the model and instantiate the object
-    hg_comp = pipeline('question-answering', model=model_post, tokenizer=tokenizer_post)
+    hg_comp = pipeline('question-answering', model=model, tokenizer=tokenizer)
     
     # Answer the question
     answer = hg_comp({'question': data['question'], 'context': data['context']})['answer']
