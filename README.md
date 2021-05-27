@@ -228,5 +228,41 @@ There are two ways to deploy the API on your local machine:
 *Sample Call*
 ```
 GET http://0.0.0.0:8080/models
+```
+*Sample Screen*
 ![image](https://user-images.githubusercontent.com/69768815/119890464-df7a2d80-bf05-11eb-8066-9a0d1f9a6b52.png)
+
+<li> <b> Container Deployment through Docker: </b> </li>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1. To deploy the app on your local machine through docker, we need a docker file ,given we already have the application file created, that would be the recipe for docker to build the application
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2. In the dockerfile, we will add the required dependency of tensorflow and pytorch to run the transformers model.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3. Once the dockerfile is created, we add the dependencies to be installed in the docker image in the requirements.txt
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4. After you add the dependencies in requirements.txt; you'll run it when the docker container would be published and deployed
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5. We'll copy the application in the app folder and run the application once the docker image was deployed
+
+*Sample Requirements.txt*
+```
+flask == 2.0.1
+transformers == 4.6.1
+```
+*Sample Dockerfile*
+````
+FROM tensorflow/tensorflow
+
+ADD requirements.txt .
+
+RUN pip install -r requirements.txt
+
+COPY answer.py /app/answer.py
+
+CMD ['python','/app/answer.py']
+
+````
+*Building the Docker Image in the Active Directory/Folder*
+```
+sudo docker build -t <image-name> . 
+```
+
+*Running the Docker Image - with ports defined for communication between local machine and docker image* 
+```
+sudo docker run -it -p 8080:8080 mgmt590 /app/answer.py
 ```
