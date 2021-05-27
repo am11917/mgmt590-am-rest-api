@@ -207,6 +207,26 @@ or
 
 ## Build
 There are two ways to deploy the API on your local machine:
-<li> Deployment with Flask: </li>
-  
+<li> <b> Deployment with Flask: </b></li>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1. To deploy the app on your local machine through flask, we just need to run the python file
 
+``` 
+>>> python question_answer.py 
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2. This will deploy your app on your local machine. Post successful deployment of the code
+```
+ * Serving Flask app 'question_answer' (lazy loading)
+ * Environment: production
+   WARNING: This is a development server. Do not use it in a production deployment.
+   Use a production WSGI server instead.
+ * Debug mode: off
+ * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+ * Running on http://0.0.0.0:8080/ (Press CTRL+C to quit)
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3. You can access the API through sending requests through Postman. (Download Postman from here - [Link](https://www.postman.com/downloads/))
+*Sample Call*
+```
+GET http://0.0.0.0:8080/models
+![image](https://user-images.githubusercontent.com/69768815/119890464-df7a2d80-bf05-11eb-8066-9a0d1f9a6b52.png)
+```
