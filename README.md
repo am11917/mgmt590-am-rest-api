@@ -252,9 +252,9 @@ ADD requirements.txt .
 
 RUN pip install -r requirements.txt
 
-COPY answer.py /app/answer.py
+COPY <aap-name>.py /app/<aap-name>.py
 
-CMD ['python','/app/answer.py']
+CMD ['python','/app/<aap-name>.py']
 
 ````
 *Building the Docker Image in the Active Directory/Folder*
@@ -264,5 +264,5 @@ sudo docker build -t <image-name> .
 
 *Running the Docker Image - with ports defined for communication between local machine and docker image* 
 ```
-sudo docker run -it -p 8080:8080 mgmt590 /app/answer.py
+sudo docker run -it -p 8080:8080 <image-name> /app/<aap-name>.py
 ```
