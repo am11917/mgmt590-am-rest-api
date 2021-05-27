@@ -8,8 +8,7 @@ This API allows you to answer your questions pulling out the information from th
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
+        <li><a href="#prerequisites-installation">Prerequisites and Installation</a></li>
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
@@ -24,7 +23,7 @@ This API allows you to answer your questions pulling out the information from th
 ## Getting Started
 To get a local image of the code and running it locally on your machine
 
-### Prerequisites
+### Prerequisites and Installation
 To run this application, you'll need the following pre-requisites installed on your machine
 
 | Syntax      | Version | Installation |
