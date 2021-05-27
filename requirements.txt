@@ -1,2 +1,8 @@
-transformers==4.2.2
-flask==1.1.2
+## libraries without version ##
+time
+os
+sqlite3
+
+## libraries with version ##
+transformers==4.6.1
+flask==2.0.1
