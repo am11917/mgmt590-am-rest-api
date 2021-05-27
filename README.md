@@ -8,7 +8,7 @@ This API allows you to answer your questions pulling out the information from th
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
-        <li><a href="#prerequisites-installation">Prerequisites and Installation</a></li>
+        <li><a href="#prerequisites-and-installation">Prerequisites & Installation</a></li>
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
