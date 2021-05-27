@@ -13,13 +13,20 @@ This API allows you to answer your questions pulling out the information from th
     </li>
     <li> <a href ="#available-routes-for-api-requests"> Available Routes for API Requests </a></li>
     <ul> <li> <a href="#models-path"> Models Path </a></li>
-      <li> <a href="answers-path"> Answers Path </a></li>
+      <li> <a href="#answers-path"> Answers Path </a></li>
     </ul>
+    <li><a href=#Build> Build API Locally </a> </li>
   </ol>
 </details>
 
+
 ## Getting Started
-To get a local image of the code and running it locally on your machine
+The API has been deployed on cloud and it can be invoked using the URL provided and passing the required available routes or methods defined in second section. Another way to run the API and test the functionality would be to get a local image of the code and run it on your local machine which would require the installation of the dependent libraries described in the next section for successful execution of the API.
+
+_**API URL - (Publically Available on Cloud)**_
+ ```
+      Base URL: https://mgmt590-am-rest-api-wbv4eowlaa-uc.a.run.app
+ ```
 
 ### Prerequisites and Installation
 To run this application, you'll need the following pre-requisites installed on your machine
@@ -197,3 +204,6 @@ or
     }
  ]
 ```
+
+## Build
+There are two ways to 
