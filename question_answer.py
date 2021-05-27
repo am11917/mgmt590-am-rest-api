@@ -161,14 +161,26 @@ def list_answers():
         if str(request.args['model']) != '':
             model_name = str(request.args['model'])
             #if model name provided in query, call function list_records_with_model
-            output = list_records_with_model (conn, model_name, start_timestamp, end_timestamp)
-            print(model_name)
+            table_check = table_exists(conn)
+            if table_check == 2 :
+                output = list_records_with_model (conn, model_name, start_timestamp, end_timestamp)
+                print(model_name)
+            else:
+                return ("Error: Table doesn't exist.Please Check")
         else:
             #if model name not provided, call function list_records_without_model
-            output = list_records_without_model (conn, start_timestamp, end_timestamp)
+            table_check = table_exists(conn)
+            if table_check == 2 :
+                output = list_records_without_model (conn, start_timestamp, end_timestamp)
+            else:
+                return ("Error: Table doesn't exist.Please Check")
     else:
         #if model name not provided, call function list_records_without_model
-        output = list_records_without_model (conn, start_timestamp, end_timestamp)
+        table_check = table_exists(conn)
+        if table_check == 2 :
+            output = list_records_without_model (conn, start_timestamp, end_timestamp)
+        else:
+            return ("Error: Table doesn't exist.Please Check")
     
     return output
 
