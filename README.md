@@ -22,3 +22,4 @@ This API allows you to answer your questions pulling out the information from th
 </details>
 
 ## Getting Started
+To get started locally 
