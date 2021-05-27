@@ -1,6 +1,4 @@
 ## libraries without version ##
-time
-os
 sqlite3
 
 ## libraries with version ##
