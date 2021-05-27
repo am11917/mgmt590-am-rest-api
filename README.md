@@ -206,4 +206,7 @@ or
 ```
 
 ## Build
-There are two ways to 
+There are two ways to deploy the API on your local machine:
+<li> Deployment with Flask: </li>
+  
+
