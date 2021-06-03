@@ -48,4 +48,4 @@ def test_list_answers():
     url2 = "?model=bert-tiny"
     with mock.patch('psycopg2.connect') as mocksql: 
         mocksql.connect().cursor().fetchall.return_value = [(1622203201, 'bert-tiny', 'bully Leigh-Ann Galloway',  'who did holly matthews play in waterloo rd?',  "She attended the British drama school East 15 in 2005,and left after winning a high-profile role in the BBC drama Waterloo Road, playing the bully Leigh-Ann Galloway.[6] Since that role, Matthews has continued to act in BBC's Doctors, playing Connie Whitfield; in ITV's The Bill playing drug addict Josie Clarke; and she was back in the BBC soap Doctors in 2009, playing Tansy Flack.")] 
-        response = client.get(url2, headers=headers, json=questionData)
+        response = client.post(url2, headers=headers, json=questionData)
