@@ -273,7 +273,8 @@ def list_records_with_model (conn,model,start_timestamp,end_timestamp):
     filters = (model,start_time_string,end_time_string)
     
     #execute the select statement and fetch all records
-    records = cur.execute(list_cmd,filters).fetchall()
+    cur.execute(list_cmd,filters)
+    records = cur.fetchall()
     
     for row in records:
         print(row)
@@ -301,7 +302,8 @@ def list_records_without_model (conn,start_timestamp,end_timestamp):
     list_cmd = (''' select * from question_answer where timestamp between ? and ?''')
     filters = (start_time_string,end_time_string)
     #execute the select statement and fetch all records
-    records = cur.execute(list_cmd,filters).fetchall()
+    cur.execute(list_cmd,filters)
+    records = cur.fetchall()
     
     for row in records:
         print(row)
