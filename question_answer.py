@@ -365,12 +365,14 @@ if __name__ == '__main__':
     #setting the database connection parameters
     sslmode="sslmode=verify-ca"
     sslrootcert_var=os.environ.get('PG_SSLROOTCERT')
+    sslrootcert_var=sslrootcert_var.replace('@','=')
     file = open("/server-ca.pem", "w")
     file.write(sslrootcert_var)
     file.close()
     os.chmod("/server-ca.pem",stat.S_IRUSR)
     os.chmod("/server-ca.pem",stat.S_IWUSR)
     sslcert_var=os.environ.get('PG_SSLCLIENT_CERT')
+    sslcert_var=sslcert_var.replace('@','=')
     file = open("/client-cert.pem", "w")
     file.write(sslcert_var)
     file.close()
