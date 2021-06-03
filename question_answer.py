@@ -13,7 +13,19 @@ from flask import jsonify
 
 
 #Creating a list of dictionary of models
-models = {}
+models = { 
+        "default": "distilled-bert",
+        "models": [
+            {
+                "name": "distilled-bert",
+                "tokenizer": "distilbert-base-uncased-distilled-squad",
+                "model": "distilbert-base-uncased-distilled-squad",
+                "pipeline": pipeline('question-answering', 
+                    model="distilbert-base-uncased-distilled-squad", 
+                    tokenizer="distilbert-base-uncased-distilled-squad")
+            }
+        ]
+    }
 
 def create_app():
     # Create my flask app
