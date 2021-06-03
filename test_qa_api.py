@@ -20,7 +20,7 @@ def test_put_model_route(client):
     modelData = {"name": "bert-tiny",
                  "tokenizer": "mrm8488/bert-tiny-5-finetuned-squadv2",
                  "model": "mrm8488/bert-tiny-5-finetuned-squadv2"}
-    r = client.put("/models", data=modelData)
+    r = client.put("/models", json=modelData)
     assert 200 == r.status_code
 
 def test_del_model_route(client):
