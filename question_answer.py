@@ -125,7 +125,7 @@ def question_answer():
             data['question'], data['context'])
     
     # connect to db 
-    conn = create_connection(db_file)
+    conn = create_connection(dbconnect)
     
     #check if the table exists 
     #if not then create table before the first execution
@@ -161,7 +161,7 @@ def question_answer():
 def list_answers():
     
     # connect to db
-    conn = create_connection(db_file)
+    conn = create_connection(dbconnect)
     # try and catch for exception handling of mandatory parameters
     try:
         start_timestamp = int(request.args['start'])
