@@ -37,6 +37,6 @@ def test_get_models(client):
     # }
     mock_response_data=b'[{"name":"distilled-bert","tokenizer":"distilbert-base-uncased-distilled-squad","model":"distilbert-base-uncased-distilled-squad"}]\n'
     #result = json.dumps(mock_response_data)
-    response = app.test_client().get('/models')
+    response = client.get('/models')
     assert response.status_code == 200
     assert response.data == mock_response_data
