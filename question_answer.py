@@ -2,8 +2,9 @@
 import time
 import os
 import stat
-import sqlite3
 import psycopg2
+import datetime
+from datetime import timezone
 from transformers.pipelines import pipeline
 from transformers import AutoModelForQuestionAnswering, AutoTokenizer
 from flask import Flask
@@ -248,7 +249,7 @@ def insert_records (conn, question, answer, context, model_name):
     time_struct = time.localtime(timestamp) # get struct_time
     time_string = time.strftime("%Y-%m-%d %H:%M:%S", time_struct)
     #insert command
-    insert_cmd = ('''insert into question_answer(question,answer,context,model,qa_timestamp) values (?,?,?,?,?)''')    
+    insert_cmd = ('''insert into question_answer(question,answer,context,model,qa_timestamp) values (%s,%s,%s,%s,%s)''')    
     qa_pair = (question,answer,context,model_name,time_string)
     #execute the insert command
     cur.execute(insert_cmd, qa_pair)
@@ -269,7 +270,7 @@ def list_records_with_model (conn,model,start_timestamp,end_timestamp):
     end_time_string = time.strftime("%Y-%m-%d %H:%M:%S", end_time_struct)   
     
     #select statement with model as a filter
-    list_cmd = (''' select * from question_answer where model=? and qa_timestamp between ? and ?''')
+    list_cmd = (''' select * from question_answer where model=%s and qa_timestamp between %s and %s''')
     filters = (model,start_time_string,end_time_string)
     
     #execute the select statement and fetch all records
@@ -282,7 +283,7 @@ def list_records_with_model (conn,model,start_timestamp,end_timestamp):
     #converting the fetched records to output in json/list of dictionaries format
     output = []
     for row in records:
-        timestamp = round(time.mktime(time.strptime(row[4], "%Y-%m-%d %H:%M:%S")))
+        timestamp = round(row[4].replace(tzinfo=timezone.utc).timestamp())
         output.append({"timestamp":timestamp, "model": row[3], "answer": row[1], "question":row[0],"context":row[2]})
     
     return jsonify(output)
@@ -299,7 +300,7 @@ def list_records_without_model (conn,start_timestamp,end_timestamp):
     end_time_string = time.strftime("%Y-%m-%d %H:%M:%S", end_time_struct)
     
     #select statement without model as a filter
-    list_cmd = (''' select * from question_answer where qa_timestamp between ? and ?''')
+    list_cmd = (''' select * from question_answer where qa_timestamp between %s and %s''')
     filters = (start_time_string,end_time_string)
     #execute the select statement and fetch all records
     cur.execute(list_cmd,filters)
@@ -310,7 +311,7 @@ def list_records_without_model (conn,start_timestamp,end_timestamp):
     #converting the fetched records to output in json/list of dictionaries format
     output = []
     for row in records:
-        timestamp = round(time.mktime(time.strptime(row[4], "%Y-%m-%d %H:%M:%S")))
+        timestamp = round(row[4].replace(tzinfo=timezone.utc).timestamp())
         output.append({"timestamp":timestamp, "model": row[3], "answer": row[1], "question":row[0],"context":row[2]})
     
     return jsonify(output)
