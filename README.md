@@ -1,7 +1,7 @@
 # ```mgmt590-am-rest-api``` Question Answering API
 This API allows you to answer your questions pulling out the information from the contextual information provided as input to the API. This API uses the question and context passed in the body of the request and takes the model as a parameter. The API uses the hugging face transformers model to answer the question and the model used to answer would be dependent on the user. 
 
-Coming Soon - Details on Persistent Database.
+Coming Soon - Details on Persistent Database...
 
 <!-- TABLE OF CONTENTS -->
 <details open="open">
