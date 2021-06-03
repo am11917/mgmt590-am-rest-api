@@ -15,177 +15,184 @@ from flask import jsonify
 #Creating a list of dictionary of models
 models = {}
 
-
-# Create my flask app
-app = Flask(__name__)
-app.config['JSON_SORT_KEYS'] = False
-
-
-# Define a handler for the / path, which
-# returns "Hello World"
-@app.route("/")
-def hello_world():
-    return "<p>Hello, World! The question answering API is healthy and running</p>"
+def create_app():
+    # Create my flask app
+    app = Flask(__name__)
+    app.config['JSON_SORT_KEYS'] = False
 
 
-# Define a handler for the /models path, with a GET request
-# to load the list of existing models
-@app.route("/models", methods=['GET'])
-def get_models():
-    models_loaded = []
-    for m in models['models']:
-        models_loaded.append({
-            'name': m['name'],
-            'tokenizer': m['tokenizer'],
-            'model': m['model']
-        })
+    # Define a handler for the / path, which
+    # returns "Hello World"
+    @app.route("/")
+    def hello_world():
+        return "<p>Hello, World! The question answering API is healthy and running</p>"
 
-    return jsonify(models_loaded)
- 
-# Define a handler for the /models path, with PUT request
-# to add another hugging face model to the list of existing models
-@app.route("/models", methods=['PUT'])
-def add_models():    
-    data = request.json
-    #append the new model in the existing list of models
-    
-    if not validate_model(data['name']):
-        models_rev = []
+
+    # Define a handler for the /models path, with a GET request
+    # to load the list of existing models
+    @app.route("/models", methods=['GET'])
+    def get_models():
+        models_loaded = []
         for m in models['models']:
-            models_rev.append(m)
-        models_rev.append({
-        "name": data['name'],
-        "tokenizer":data['tokenizer'],
-        "model":data['model'],
-        "pipeline":pipeline('question-answering',
-            model=data['model'],
-            tokenizer=data['tokenizer'])
-        })
-        models['models'] = models_rev
-    
-    models_loaded = []
-    
-    for m in models['models']:
-        models_loaded.append({
-            "name": m['name'],
-            "tokenizer":m['tokenizer'],
-            "model":m['model']
+            models_loaded.append({
+                'name': m['name'],
+                'tokenizer': m['tokenizer'],
+                'model': m['model']
             })
-    return jsonify(models_loaded)
+    
+        return jsonify(models_loaded)
+ 
+    # Define a handler for the /models path, with PUT request
+    # to add another hugging face model to the list of existing models
+    @app.route("/models", methods=['PUT'])
+    def add_models():    
+        data = request.json
+        #append the new model in the existing list of models
+        
+        if not validate_model(data['name']):
+            models_rev = []
+            for m in models['models']:
+                models_rev.append(m)
+            models_rev.append({
+            "name": data['name'],
+            "tokenizer":data['tokenizer'],
+            "model":data['model'],
+            "pipeline":pipeline('question-answering',
+                model=data['model'],
+                tokenizer=data['tokenizer'])
+            })
+            models['models'] = models_rev
+        
+        models_loaded = []
+        
+        for m in models['models']:
+            models_loaded.append({
+                "name": m['name'],
+                "tokenizer":m['tokenizer'],
+                "model":m['model']
+                })
+        return jsonify(models_loaded)
 
-# Define a handler for the /models path, with DELETE request
-# to delete a hugging face model from the list of existing models
-# after accepting model name to be deleted as a mandatory query parameter
-@app.route("/models", methods=['DELETE'])
-def delete_models():
-    #check if model name has been passed as a query parameter
-    if 'model' in request.args:
-        if str(request.args['model']) != '':
-            model_name = str(request.args['model'])
+    # Define a handler for the /models path, with DELETE request
+    # to delete a hugging face model from the list of existing models
+    # after accepting model name to be deleted as a mandatory query parameter
+    @app.route("/models", methods=['DELETE'])
+    def delete_models():
+        #check if model name has been passed as a query parameter
+        if 'model' in request.args:
+            if str(request.args['model']) != '':
+                model_name = str(request.args['model'])
+            else:
+                return("Error: No Model Name Provided for Delete Method")
         else:
             return("Error: No Model Name Provided for Delete Method")
-    else:
-        return("Error: No Model Name Provided for Delete Method")
+        
+        if request.args.get('model') == models['default']:
+            return "Can't delete default model", 400
+        
+        # Load the provided model
+        models_rev = []
+        for m in models['models']:
+            if m['name'] != request.args.get('model'):
+                models_rev.append(m)
+        models['models'] = models_rev
     
-    if request.args.get('model') == models['default']:
-        return "Can't delete default model", 400
+        # Get the loaded models
+        models_loaded = []
+        for m in models['models']:
+            models_loaded.append({
+                'name': m['name'],
+                'tokenizer': m['tokenizer'],
+                'model': m['model']
+            })
     
-    # Load the provided model
-    models_rev = []
-    for m in models['models']:
-        if m['name'] != request.args.get('model'):
-            models_rev.append(m)
-    models['models'] = models_rev
-
-    # Get the loaded models
-    models_loaded = []
-    for m in models['models']:
-        models_loaded.append({
-            'name': m['name'],
-            'tokenizer': m['tokenizer'],
-            'model': m['model']
-        })
-
-    return jsonify(models_loaded)
-
-
-# Define a handler for the /answer path with a POST request, which
-# processes a JSON payload with a question and context 
-# and returns a JSON output with answer using a Hugging
-# Face model along with the model name and timestamp
-@app.route("/answer", methods=['POST'])
-def question_answer():
+        return jsonify(models_loaded)
     
-    # Get the request body data
-    data = request.json
-    # Validate model name if given
-    if request.args.get('model') != None:
-        if not validate_model(request.args.get('model')):
-            return "Model not found", 400
-            
-    answer, model_name = answer_question(request.args.get('model'), 
-            data['question'], data['context'])
     
-    # connect to db 
-    conn = create_connection(dbconnect)
+    # Define a handler for the /answer path with a POST request, which
+    # processes a JSON payload with a question and context 
+    # and returns a JSON output with answer using a Hugging
+    # Face model along with the model name and timestamp
+    @app.route("/answer", methods=['POST'])
+    def question_answer():
+        
+        # Get the request body data
+        data = request.json
+        # Validate model name if given
+        if request.args.get('model') != None:
+            if not validate_model(request.args.get('model')):
+                return "Model not found", 400
+                
+        answer, model_name = answer_question(request.args.get('model'), 
+                data['question'], data['context'])
+        
+        # connect to db 
+        conn = create_connection(dbconnect)
+        
+        #check if the table exists 
+        #if not then create table before the first execution
+        table_check = table_exists(conn)
+        
+        if table_check == 1 :        
+            #create table if table not already existing
+            create_table(conn)
+            #insert your response to the table
+            timestamp = insert_records(conn, data['question'],answer,data['context'],model_name)
+        elif table_check == 2 :
+            #insert your response to the table
+            timestamp = insert_records(conn, data['question'],answer,data['context'],model_name)
+        else:
+            print("Error in table exist functionality. Please Check")
+        
+        # Create the output response body.
+        out = {
+                "timestamp": timestamp,
+                "model": model_name,
+                "answer": answer,
+                "question": data['question'],
+                "context": data['context']
+              }
     
-    #check if the table exists 
-    #if not then create table before the first execution
-    table_check = table_exists(conn)
+        return jsonify(out)
     
-    if table_check == 1 :        
-        #create table if table not already existing
-        create_table(conn)
-        #insert your response to the table
-        timestamp = insert_records(conn, data['question'],answer,data['context'],model_name)
-    elif table_check == 2 :
-        #insert your response to the table
-        timestamp = insert_records(conn, data['question'],answer,data['context'],model_name)
-    else:
-        print("Error in table exist functionality. Please Check")
     
-    # Create the output response body.
-    out = {
-            "timestamp": timestamp,
-            "model": model_name,
-            "answer": answer,
-            "question": data['question'],
-            "context": data['context']
-          }
-
-    return jsonify(out)
-
-
-# Define a handler for /answer path with GET request which returns
-# recently answered questions.
-# Model Name is optional and Start and End timestamp are mandatory parameters
-@app.route("/answer", methods=['GET'])
-def list_answers():
-    
-    # connect to db
-    conn = create_connection(dbconnect)
-    # try and catch for exception handling of mandatory parameters
-    try:
-        start_timestamp = int(request.args['start'])
-    except KeyError:
-        print("Please provide start timestamp with the API call")
-    # try and catch for exception handling of mandatory parameters
-    try:
-        end_timestamp = int(request.args['end'])
-    except KeyError:
-        print("Please provide end timestamp with the API call")
-    
-    #model is not a mandatory parameter, so handle queries accordingly with or without model parameter
-    if 'model' in request.args:
-        if str(request.args['model']) != '':
-            model_name = str(request.args['model'])
-            #if model name provided in query, call function list_records_with_model
-            table_check = table_exists(conn)
-            if table_check == 2 :
-                output = list_records_with_model (conn, model_name, start_timestamp, end_timestamp)
-                print(model_name)
+    # Define a handler for /answer path with GET request which returns
+    # recently answered questions.
+    # Model Name is optional and Start and End timestamp are mandatory parameters
+    @app.route("/answer", methods=['GET'])
+    def list_answers():
+        
+        # connect to db
+        conn = create_connection(dbconnect)
+        # try and catch for exception handling of mandatory parameters
+        try:
+            start_timestamp = int(request.args['start'])
+        except KeyError:
+            print("Please provide start timestamp with the API call")
+        # try and catch for exception handling of mandatory parameters
+        try:
+            end_timestamp = int(request.args['end'])
+        except KeyError:
+            print("Please provide end timestamp with the API call")
+        
+        #model is not a mandatory parameter, so handle queries accordingly with or without model parameter
+        if 'model' in request.args:
+            if str(request.args['model']) != '':
+                model_name = str(request.args['model'])
+                #if model name provided in query, call function list_records_with_model
+                table_check = table_exists(conn)
+                if table_check == 2 :
+                    output = list_records_with_model (conn, model_name, start_timestamp, end_timestamp)
+                    print(model_name)
+                else:
+                    return ("Error: Table doesn't exist.Please Check")
             else:
-                return ("Error: Table doesn't exist.Please Check")
+                #if model name not provided, call function list_records_without_model
+                table_check = table_exists(conn)
+                if table_check == 2 :
+                    output = list_records_without_model (conn, start_timestamp, end_timestamp)
+                else:
+                    return ("Error: Table doesn't exist.Please Check")
         else:
             #if model name not provided, call function list_records_without_model
             table_check = table_exists(conn)
@@ -193,15 +200,9 @@ def list_answers():
                 output = list_records_without_model (conn, start_timestamp, end_timestamp)
             else:
                 return ("Error: Table doesn't exist.Please Check")
-    else:
-        #if model name not provided, call function list_records_without_model
-        table_check = table_exists(conn)
-        if table_check == 2 :
-            output = list_records_without_model (conn, start_timestamp, end_timestamp)
-        else:
-            return ("Error: Table doesn't exist.Please Check")
-    
-    return output
+        
+        return output
+    return app
 
 
 ## Common functions used for SQL operations are defined below
@@ -350,7 +351,7 @@ def validate_model(model_name):
 if __name__ == '__main__':
     
     
-    
+    app = create_app()
     # Initialize our default model.
     models = { 
         "default": "distilled-bert",
