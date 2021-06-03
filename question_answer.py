@@ -368,7 +368,7 @@ if __name__ == '__main__':
     sslkey="sslkey={}".format(os.environ.get('PG_SSL_CLIENT_KEY'))
     hostaddr="hostaddr={}".format(os.environ.get('PG_HOST'))
     port="port=5432"
-    user="user={}"..format(os.environ.get('PG_USER'))
+    user="user={}".format(os.environ.get('PG_USER'))
     dbname="dbname={}".format(os.environ.get('PG_DBNAME'))
     password="password={}".format(os.environ.get('PG_USER_PASSWORD'))
     
