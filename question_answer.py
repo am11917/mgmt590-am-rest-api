@@ -2,11 +2,13 @@
 import time
 import os
 import sqlite3
+import psycopg2
 from transformers.pipelines import pipeline
 from transformers import AutoModelForQuestionAnswering, AutoTokenizer
 from flask import Flask
 from flask import request
 from flask import jsonify
+
 
 #Creating a list of dictionary of models
 models = {}
@@ -203,10 +205,10 @@ def list_answers():
 ## Common functions used for SQL operations are defined below
 
 # 1. Create a connection to database with database file defined in main function call
-def create_connection (db_file):
+def create_connection (dbconnect):
     conn = None
     try:
-        conn = sqlite3.connect(db_file)
+        conn = psycopg2.connect(dbconnect)
     except Error as e:
         print(e)
     
@@ -342,8 +344,8 @@ def validate_model(model_name):
 # Run if running "python question_answer.py"
 if __name__ == '__main__':
     
-    #setting the database name as a global parameter
-    db_file = "mgmt590.db"
+    
+    
     # Initialize our default model.
     models = { 
         "default": "distilled-bert",
@@ -358,5 +360,29 @@ if __name__ == '__main__':
             }
         ]
     }
+    
+    #setting the database connection parameters
+    sslmode="sslmode=verify-ca"
+    sslrootcert="sslrootcert={}".format(os.environ.get('PG_SSLROOTCERT'))
+    sslcert="sslcert={}".format(os.environ.get('PG_SSLCLIENT_CERT'))
+    sslkey="sslkey={}".format(os.environ.get('PG_SSL_CLIENT_KEY'))
+    hostaddr="hostaddr={}".format(os.environ.get('PG_HOST'))
+    port="port=5432"
+    user="user={}"..format(os.environ.get('PG_USER'))
+    dbname="dbname={}".format(os.environ.get('PG_DBNAME'))
+    password="password={}".format(os.environ.get('PG_USER_PASSWORD'))
+    
+    dbconnect = " ".join([
+    sslmode,
+    sslrootcert,
+    sslcert,
+    sslkey,
+    hostaddr,
+    port,
+    user,
+    password,
+    dbname
+    ])
+    
     # Run our Flask app and start listening for requests!
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 8080)), threaded=True)
