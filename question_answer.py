@@ -351,7 +351,7 @@ def validate_model(model_name):
 if __name__ == '__main__':
     
     
-    app = create_app()
+    
     # Initialize our default model.
     models = { 
         "default": "distilled-bert",
@@ -411,5 +411,7 @@ if __name__ == '__main__':
     dbname
     ])
     
+    #Create the flask app
+    app = create_app()
     # Run our Flask app and start listening for requests!
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 8080)), threaded=True)
