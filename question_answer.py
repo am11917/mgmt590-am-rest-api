@@ -9,18 +9,7 @@ from flask import request
 from flask import jsonify
 
 #Creating a list of dictionary of models
-models = [
-          {
-          "name": "distilled-bert",
-          "tokenizer": "distilbert-base-uncased-distilled-squad",
-          "model": "distilbert-base-uncased-distilled-squad"
-          },
-          {
-          "name": "deepset-roberta",
-          "tokenizer": "deepset/roberta-base-squad2",
-          "model": "deepset/roberta-base-squad2"
-          }
-         ]
+models = {}
 
 
 # Create my flask app
@@ -32,14 +21,22 @@ app.config['JSON_SORT_KEYS'] = False
 # returns "Hello World"
 @app.route("/")
 def hello_world():
-    return "<p>Hello, World!</p>"
+    return "<p>Hello, World! The question answering API is healthy and running</p>"
 
 
 # Define a handler for the /models path, with a GET request
 # to load the list of existing models
 @app.route("/models", methods=['GET'])
 def get_models():
-    return jsonify(models)
+    models_loaded = []
+    for m in models['models']:
+        models_loaded.append({
+            'name': m['name'],
+            'tokenizer': m['tokenizer'],
+            'model': m['model']
+        })
+
+    return jsonify(models_loaded)
  
 # Define a handler for the /models path, with PUT request
 # to add another hugging face model to the list of existing models
@@ -47,9 +44,30 @@ def get_models():
 def add_models():    
     data = request.json
     #append the new model in the existing list of models
-    models.append({"name": data['name'],"tokenizer":data['tokenizer'],"model":data['model']})                 
-    return jsonify(models)
-
+    
+    if not validate_model(data['name']):
+        models_rev = []
+        for m in models['models']:
+            models_rev.append(m)
+        models_rev.append({
+        "name": data['name'],
+        "tokenizer":data['tokenizer'],
+        "model":data['model'],
+        "pipeline":pipeline('question-answering',
+            model=data['model'],
+            tokenizer=data['tokenizer'])
+        })
+        models['models'] = models_rev
+    
+    models_loaded = []
+    
+    for m in models['models']:
+        models_loaded.append({
+            "name": m['name'],
+            "tokenizer":m['tokenizer'],
+            "model":m['model']
+            })
+    return jsonify(models_loaded)
 
 # Define a handler for the /models path, with DELETE request
 # to delete a hugging face model from the list of existing models
@@ -65,12 +83,26 @@ def delete_models():
     else:
         return("Error: No Model Name Provided for Delete Method")
     
-    #code to delete the model from the list of models
-    for i in range(len(models)):
-        if models[i]['name'] == model_name:
-            del models[i]
-            break
-    return jsonify(models)
+    if request.args.get('model') == models['default']:
+        return "Can't delete default model", 400
+    
+    # Load the provided model
+    models_rev = []
+    for m in models['models']:
+        if m['name'] != request.args.get('model'):
+            models_rev.append(m)
+    models['models'] = models_rev
+
+    # Get the loaded models
+    models_loaded = []
+    for m in models['models']:
+        models_loaded.append({
+            'name': m['name'],
+            'tokenizer': m['tokenizer'],
+            'model': m['model']
+        })
+
+    return jsonify(models_loaded)
 
 
 # Define a handler for the /answer path with a POST request, which
@@ -80,33 +112,16 @@ def delete_models():
 @app.route("/answer", methods=['POST'])
 def question_answer():
     
-    if 'model' in request.args:
-        if str(request.args['model']) != '':
-            model_name = str(request.args['model'])
-        else:
-            model_name = "distilled-bert" #default model
-    else:
-        model_name = "distilled-bert" #default model
-    
-    #fetch model, tokenizer based on the model name passed as query parameter
-    for i in range(len(models)):
-        if models[i]['name'] == model_name:
-            model_post = models[i]['model']
-            tokenizer_post = models[i]['tokenizer']
-            break
-    
     # Get the request body data
     data = request.json
-    
-    model = AutoModelForQuestionAnswering.from_pretrained(model_post)
-    tokenizer = AutoTokenizer.from_pretrained(model_post)
-          
-    # Import the model and instantiate the object
-    hg_comp = pipeline('question-answering', model=model, tokenizer=tokenizer)
-    
-    # Answer the question
-    answer = hg_comp({'question': data['question'], 'context': data['context']})['answer']
+    # Validate model name if given
+    if request.args.get('model') != None:
+        if not validate_model(request.args.get('model')):
+            return "Model not found", 400
             
+    answer, model_name = answer_question(request.args.get('model'), 
+            data['question'], data['context'])
+    
     # connect to db 
     conn = create_connection(db_file)
     
@@ -293,13 +308,55 @@ def list_records_without_model (conn,start_timestamp,end_timestamp):
         output.append({"timestamp":timestamp, "model": row[3], "answer": row[1], "question":row[0],"context":row[2]})
     
     return jsonify(output)
+
+# 7. Function to answer questions and reduce latency
+def answer_question(model_name, question, context):
     
+    # Get the right model pipeline
+    if model_name == None:
+        for m in models['models']:
+            if m['name'] == models['default']:
+                model_name = m['name']
+                hg_comp = m['pipeline']
+    else:
+        for m in models['models']:
+            if m['name'] == model_name:
+                hg_comp = m['pipeline']
+
+    # Answer the answer
+    answer = hg_comp({'question': question, 'context': context})['answer']
+
+    return answer, model_name
+
+#8. Function to validate the model name
+def validate_model(model_name):
+    
+    # Get the loaded models
+    model_names = []
+    for m in models['models']:
+        model_names.append(m['name'])
+
+    return model_name in model_names
+
     
 # Run if running "python question_answer.py"
 if __name__ == '__main__':
     
     #setting the database name as a global parameter
     db_file = "mgmt590.db"
+    # Initialize our default model.
+    models = { 
+        "default": "distilled-bert",
+        "models": [
+            {
+                "name": "distilled-bert",
+                "tokenizer": "distilbert-base-uncased-distilled-squad",
+                "model": "distilbert-base-uncased-distilled-squad",
+                "pipeline": pipeline('question-answering', 
+                    model="distilbert-base-uncased-distilled-squad", 
+                    tokenizer="distilbert-base-uncased-distilled-squad")
+            }
+        ]
+    }
     # Run our Flask app and start listening for requests!
-    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 8080)), threaded=True)
-    
+    app.run(host='0.0.0.0', port=8080, threaded=True)
