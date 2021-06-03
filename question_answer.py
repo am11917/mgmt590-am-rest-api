@@ -363,14 +363,33 @@ if __name__ == '__main__':
     
     #setting the database connection parameters
     sslmode="sslmode=verify-ca"
-    sslrootcert="sslrootcert={}".format(os.environ.get('PG_SSLROOTCERT'))
-    sslcert="sslcert={}".format(os.environ.get('PG_SSLCLIENT_CERT'))
-    sslkey="sslkey={}".format(os.environ.get('PG_SSL_CLIENT_KEY'))
+    sslrootcert_var=os.environ.get('PG_SSLROOTCERT')
+    file = open("server-ca.pem", "w")
+    file.write(sslrootcert_var)
+    file.close()
+    os.chmod("server-ca.pem",stat.S_IRUSR)
+    os.chmod("server-ca.pem",stat.S_IWUSR)
+    sslcert_var=os.environ.get('PG_SSLCLIENT_CERT')
+    file = open("client-cert.pem", "w")
+    file.write(sslcert_var)
+    file.close()
+    os.chmod("client-cert.pem",stat.S_IRUSR)
+    os.chmod("client-cert.pem",stat.S_IWUSR)
+    sslkey_var=os.environ.get('PG_SSL_CLIENT_KEY')
+    file = open("client-key.pem", "w")
+    file.write(sslkey_var)
+    file.close()
+    os.chmod("client-key.pem",stat.S_IRUSR)
+    os.chmod("client-key.pem",stat.S_IWUSR)
     hostaddr="hostaddr={}".format(os.environ.get('PG_HOST'))
     port="port=5432"
     user="user={}".format(os.environ.get('PG_USER'))
     dbname="dbname={}".format(os.environ.get('PG_DBNAME'))
     password="password={}".format(os.environ.get('PG_USER_PASSWORD'))
+    
+    sslrootcert="sslrootcert=/server-ca.pem"
+    sslcert="sslcert=/client-cert.pem"
+    sslkey="sslkey=/client-key.pem"
     
     dbconnect = " ".join([
     sslmode,
