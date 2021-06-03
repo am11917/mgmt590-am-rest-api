@@ -218,7 +218,7 @@ def create_connection (dbconnect):
 # 2. Check if the table exists in the database - if not then create it
 def table_exists (conn):
     cur = conn.cursor()    
-    list_of_table = cur.execute(''' select * from information_schema.tables where table_name='question_answer' ''').fetchall()
+    list_of_table = cur.execute(''' select * from information_schema.tables where table_name='question_answer' ''').fetchall()[0]
     
     if list_of_table == [] :
         print('Table does not exist')
