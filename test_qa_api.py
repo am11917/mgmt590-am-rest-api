@@ -15,3 +15,9 @@ def test_health(client):
 def test_list_model_route(client):
     r = client.get("/models")
     assert 200 == r.status_code
+def test_list_model_route(client):
+    modelData = {"name": "bert-tiny",
+                 "tokenizer": "mrm8488/bert-tiny-5-finetuned-squadv2",
+                 "model": "mrm8488/bert-tiny-5-finetuned-squadv2"}
+    r = client.put("/models", data=modelData)
+    assert 200 == r.status_code
