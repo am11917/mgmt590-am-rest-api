@@ -233,7 +233,7 @@ def create_table (conn):
     #create an sql cursor for execution of sql queries
     cur = conn.cursor()
     #create table command
-    create_cmd = (''' CREATE TABLE IF NOT EXISTS question_answer (question varchar(10000),answer varchar(10000),context varchar(500000),model varchar(1000), timestamp DATETIME) ''')
+    create_cmd = (''' CREATE TABLE IF NOT EXISTS question_answer (question varchar(10000),answer varchar(10000),context varchar(500000),model varchar(1000), qa_timestamp timestamp) ''')
     #executing the command for creating table
     cur.execute(create_cmd)
     #commit the changes in database
@@ -248,7 +248,7 @@ def insert_records (conn, question, answer, context, model_name):
     time_struct = time.localtime(timestamp) # get struct_time
     time_string = time.strftime("%Y-%m-%d %H:%M:%S", time_struct)
     #insert command
-    insert_cmd = ('''insert into question_answer(question,answer,context,model,timestamp) values (?,?,?,?,?)''')    
+    insert_cmd = ('''insert into question_answer(question,answer,context,model,qa_timestamp) values (?,?,?,?,?)''')    
     qa_pair = (question,answer,context,model_name,time_string)
     #execute the insert command
     cur.execute(insert_cmd, qa_pair)
@@ -269,7 +269,7 @@ def list_records_with_model (conn,model,start_timestamp,end_timestamp):
     end_time_string = time.strftime("%Y-%m-%d %H:%M:%S", end_time_struct)   
     
     #select statement with model as a filter
-    list_cmd = (''' select * from question_answer where model=? and timestamp between ? and ?''')
+    list_cmd = (''' select * from question_answer where model=? and qa_timestamp between ? and ?''')
     filters = (model,start_time_string,end_time_string)
     
     #execute the select statement and fetch all records
@@ -299,7 +299,7 @@ def list_records_without_model (conn,start_timestamp,end_timestamp):
     end_time_string = time.strftime("%Y-%m-%d %H:%M:%S", end_time_struct)
     
     #select statement without model as a filter
-    list_cmd = (''' select * from question_answer where timestamp between ? and ?''')
+    list_cmd = (''' select * from question_answer where qa_timestamp between ? and ?''')
     filters = (start_time_string,end_time_string)
     #execute the select statement and fetch all records
     cur.execute(list_cmd,filters)
