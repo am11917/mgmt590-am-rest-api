@@ -218,7 +218,8 @@ def create_connection (dbconnect):
 # 2. Check if the table exists in the database - if not then create it
 def table_exists (conn):
     cur = conn.cursor()    
-    list_of_table = cur.execute(''' select * from information_schema.tables where table_name='question_answer' ''').fetchall()[0]
+    cur.execute(''' select * from information_schema.tables where table_name='question_answer' ''')
+    list_of_table = cur.fetchall()
     
     if list_of_table == [] :
         print('Table does not exist')
@@ -232,7 +233,7 @@ def create_table (conn):
     #create an sql cursor for execution of sql queries
     cur = conn.cursor()
     #create table command
-    create_cmd = (''' CREATE TABLE IF NOT EXISTS question_answer (question varchar(10000),answer varchar(10000),context varchar(50000,50000),model varchar(1000), timestamp DATETIME) ''')
+    create_cmd = (''' CREATE TABLE IF NOT EXISTS question_answer (question varchar(10000),answer varchar(10000),context varchar(500000),model varchar(1000), timestamp DATETIME) ''')
     #executing the command for creating table
     cur.execute(create_cmd)
     #commit the changes in database
