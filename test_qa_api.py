@@ -27,8 +27,8 @@ def test_del_model_route(client):
     r = client.delete("/models?model=bert-tiny")
     assert 200 == r.status_code
 
-def test_get_models():
-    response = app.test_client().get('/models')
+def test_get_models(client):
+    response = client.get('/models')
 
     # mock_response_data = {
     #     "name": "distilled-bert",
