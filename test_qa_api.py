@@ -1,5 +1,7 @@
 import pytest
 import mock
+import sqlite3
+import time
 from question_answer import create_app
 
 @pytest.fixture
@@ -41,12 +43,34 @@ def test_get_models(client):
     response = client.get('/models')
     assert response.status_code == 200
     assert response.data == mock_response_data
-    
-def test_list_answers():
-    questionData = {"question": "who did holly matthews play in waterloo rd?",
-                    "context": "She attended the British drama school East 15 in 2005,and left after winning a high-profile role in the BBC drama Waterloo Road, playing the bully Leigh-Ann Galloway.[6] Since that role, Matthews has continued to act in BBC's Doctors, playing Connie Whitfield; in ITV's The Bill playing drug addict Josie Clarke; and she was back in the BBC soap Doctors in 2009, playing Tansy Flack."}
-    headers = {'Content-Type': 'application/json'} 
-    url2 = "/answer?model=bert-tiny"
-    with mock.patch('psycopg2.connect') as mocksql: 
-        mocksql.connect().cursor().fetchall.return_value = [(1622203201, 'bert-tiny', 'bully Leigh-Ann Galloway',  'who did holly matthews play in waterloo rd?',  "She attended the British drama school East 15 in 2005,and left after winning a high-profile role in the BBC drama Waterloo Road, playing the bully Leigh-Ann Galloway.[6] Since that role, Matthews has continued to act in BBC's Doctors, playing Connie Whitfield; in ITV's The Bill playing drug addict Josie Clarke; and she was back in the BBC soap Doctors in 2009, playing Tansy Flack.")] 
-        response = client.post(url2, headers=headers, json=questionData)
+
+
+def test_postAnswer(client):
+    # Test /answer POST
+    payload = {
+        "question": "What is the capital city of Indiana?",
+        "context": "Indianapolis, colloquially known as Indy, is the state capital and most-populous city of the U.S. state of Indiana and the seat of Marion County. According to 2019 estimates from the U.S. Census Bureau, the consolidated population of Indianapolis and Marion County was 886,220."
+    }
+    headers = {
+        'Content-Type': 'application/json'
+    }
+    model_string = ['?model=distilled-bert', '']
+    for m in model_string:
+        r = client.post("/answer" + m, json=payload, headers=headers)
+        assert 200 == r.status_code
+
+if __name__ == '__main__':
+    timestamp = int(time.time())
+    # Connect to database
+    conn = sqlite3.connect("test_db.db")
+    # Create a cursor
+    c = conn.cursor()
+    # Create a table
+    c.execute("""CREATE TABLE IF NOT EXISTS answers (
+                timestamp DateTime, model varchar(100), answer varchar(500), question varchar(500), context varchar(500)
+        )""")
+    c.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    print(c.fetchall())
+    # commit and close
+    conn.commit()
+    conn.close()
