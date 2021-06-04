@@ -1,7 +1,19 @@
-# ```mgmt590-am-rest-api``` Question Answering API
-This API allows you to answer your questions pulling out the information from the contextual information provided as input to the API. This API uses the question and context passed in the body of the request and takes the model as a parameter. The API uses the hugging face transformers model to answer the question and the model used to answer would be dependent on the user. 
+# ```mgmt590-am-rest-api``` 
+# Question Answering API
+This API allows you to answer your questions pulling out the information from the contextual information provided as input to the API. This API uses the question and context passed in the body of the request and takes the model as a parameter. The API uses the hugging face transformers model to answer the question and the model used to answer would be dependent on the user.
 
-Coming Soon - Details on Persistent Database...
+V1 - Release Date - 05/27/2021
+- Basic REST API deployed on cloud
+- Storing question answers information in SQLite Database
+- Called through Postman
+- Automated deployment to cloud through Github Actions
+
+V2 - Release Date - 06/03/2021
+- Automated deployment through github actions with unit test cases to validate the routes
+- Connection to persistent PostgreSQL database in Google Cloud SQL
+- Web App built with Streamlit to provide UI to the REST API and communicate with end user through Web App
+- Dependency on SQLite will be removed and Psycopg, Pytest has been added
+- Added unit test cases file in the repo
 
 <!-- TABLE OF CONTENTS -->
 <details open="open">
@@ -38,10 +50,11 @@ To run this application, you'll need the following pre-requisites installed on y
 | Python | 3.9.1 or above  | <a href="https://www.python.org/downloads/"> Python </a> |
 | Flask   | 2.0.1        | `pip install flask` |
 | Transformers | 4.6.1 | `pip install transformers` |
-| SQLite | 2.6.0 | `pip install sqlite3` |
+| Psycopg2 | 2.68.6 | `pip install psycopg2-binary` |
 | Docker Engine | NA | <a href="https://docs.docker.com/engine/"> Docker </a>|
 | Tensor Flow | 2.5.0 | `pip install --upgrade tensorflow` |
 | Pytorch | 1.8.1+cpu | `pip install torch` |
+| Pytest | 6.2.2 | `pip install pytest`|
 
 ## Available Routes for API Requests
 There are multiple methods/paths available that provide multiple functionality to list, add or delete transformers models. Request an answer to the questions
@@ -235,26 +248,31 @@ GET http://0.0.0.0:8080/models
 ![image](https://user-images.githubusercontent.com/69768815/119890464-df7a2d80-bf05-11eb-8066-9a0d1f9a6b52.png)
 
 <li> <b> Container Deployment through Docker: </b> </li>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1. To deploy the app on your local machine through docker, we need a docker file ,given we already have the application file created, that would be the recipe for docker to build the application
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2. In the dockerfile, we will add the required dependency of tensorflow and pytorch to run the transformers model.
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3. Once the dockerfile is created, we add the dependencies to be installed in the docker image in the requirements.txt
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4. After you add the dependencies in requirements.txt; you'll run it when the docker container would be published and deployed
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5. We'll copy the application in the app folder and run the application once the docker image was deployed
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1. To deploy the app on your local machine through docker, we need a docker file ,given we already have the application file created, that
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  would be the recipe for docker to build the application </br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2. In the dockerfile, we will add the required dependency of tensorflow and pytorch to run the transformers model. </br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3. Once the dockerfile is created, we add the dependencies to be installed in the docker image in the requirements.txt </br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4. After you add the dependencies in requirements.txt; you'll run it when the docker container would be published and deployed </br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5. We'll copy the application in the app folder and run the application once the docker image was deployed </br> </br>
 
 *Sample Requirements.txt*
 ```
 flask == 2.0.1
 transformers == 4.6.1
+psycopg2-binary
+pytest==6.2.2
 ```
 *Sample Dockerfile*
 ````
 FROM tensorflow/tensorflow
+FROM pytorch/pytorch
 
 ADD requirements.txt .
 
 RUN pip install -r requirements.txt
 
-COPY <aap-name>.py /app/<aap-name>.py
+COPY <test_case_file>.py /app/<test_case_file>.py
+COPY <app-name>.py /app/<app-name>.py
 
 CMD ['python','/app/<aap-name>.py']
 
