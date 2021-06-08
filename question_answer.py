@@ -377,7 +377,7 @@ if __name__ == '__main__':
     if not os.path.exists('.ssl'):
         os.makedirs('.ssl')
     
-    filecontents = os.environ.get('PG_SSLROOTCERT')
+    filecontents = os.environ.get('PG_SSLROOTCERT').replace("@", "=")
     with open('.ssl/server-ca.pem', 'w') as f:
         f.write(filecontents)
 
@@ -385,7 +385,7 @@ if __name__ == '__main__':
     with open('.ssl/client-cert.pem', 'w') as f:
         f.write(filecontents)
 
-    filecontents = os.environ.get('PG_SSL_CLIENT_KEY').replace("@", "=")
+    filecontents = os.environ.get('PG_SSL_CLIENT_KEY')
     with open('.ssl/client-key.pem', 'w') as f:
         f.write(filecontents)
 
