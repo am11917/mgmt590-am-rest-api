@@ -41,7 +41,7 @@ sslcert = "sslcert=.ssl/client-cert.pem"
 sslkey = "sslkey=.ssl/client-key.pem"
 hostaddr = "hostaddr={}".format(os.environ.get('PG_HOST'))
 user="user={}".format(os.environ.get('PG_USER'))
-password = "password={}".format(os.environ.get('PG_PASSWORD'))
+password = "password={}".format(os.environ.get('PG_USER_PASSWORD'))
 dbname = "dbname=mgmt590-webapp-db-tst"
 db_connect_string = " ".join([
       sslmode,
