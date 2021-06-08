@@ -12,7 +12,19 @@ from flask import request
 from flask import jsonify
 
 # Create a variable that will hold our models in memory
-models = {}
+models = { 
+    "default": "distilled-bert",
+    "models": [
+        {
+            "name": "distilled-bert",
+            "tokenizer": "distilbert-base-uncased-distilled-squad",
+            "model": "distilbert-base-uncased-distilled-squad",
+            "pipeline": pipeline('question-answering',
+                                 model="distilbert-base-uncased-distilled-squad",
+                                 tokenizer="distilbert-base-uncased-distilled-squad")
+        }
+    ]
+}
 
 def create_app(models, conn):
     # Create my flask app
