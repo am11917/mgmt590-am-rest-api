@@ -11,12 +11,12 @@ env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT }}
   SERVICE: mgmt590-am-rest-api
   REGION: us-central1
-  pg_sslrootcert: ${{ secrets.PG_SSLROOTCERT }}
-  pg_sslclient_cert: ${{ secrets.PG_SSLCLIENT_CERT }}
-  pg_ssl_client_key: ${{ secrets.PG_SSL_CLIENT_KEY }}
-  pg_host: ${{ secrets.PG_HOST }}
-  pg_user: ${{ secrets.PG_USER }}
-  pg_user_password: ${{ secrets.PG_USER_PASSWORD}}
+  PG_SSLROOTCERT: ${{ secrets.PG_SSLROOTCERT }}
+  PG_SSLCLIENT_CERT: ${{ secrets.PG_SSLCLIENT_CERT }}
+  PG_SSL_CLIENT_KEY: ${{ secrets.PG_SSL_CLIENT_KEY }}
+  PG_HOST: ${{ secrets.PG_HOST }}
+  PG_USER: ${{ secrets.PG_USER }}
+  PG_USER_PASSWORD: ${{ secrets.PG_USER_PASSWORD}}
 
 jobs:
   deploy:
@@ -42,7 +42,7 @@ jobs:
         
     - name: Test Container
       run: |-
-        docker run --env pg_sslrootcert=${{ env.pg_sslrootcert }} --env pg_sslclient_cert=${{ env.pg_sslclient_cert }} --env pg_ssl_client_key=${{ env.pg_ssl_client_key }} --env pg_host=${{ env.pg_host }} --env pg_user=${{ env.pg_user }} --env pg_user_password=${{ env.pg_user_password }} -w /app gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{  github.sha }} pytest -v
+        docker run --env PG_SSLROOTCERT='${{ env.PG_SSLROOTCERT }}' --env PG_SSLCLIENT_CERT=${{ env.PG_SSLCLIENT_CERT }} --env PG_SSL_CLIENT_KEY=${{ env.PG_SSL_CLIENT_KEY }} --env PG_HOST=${{ env.PG_HOST }} --env PG_USER=${{ env.PG_USER }} --env PG_USER_PASSWORD=${{ env.PG_USER_PASSWORD }} -w /app gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }} pytest -v
     
     - name: Deploy to Cloud Run
       id: deploy
