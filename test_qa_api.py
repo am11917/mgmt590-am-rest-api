@@ -1,70 +1,114 @@
+import os
+import time
+
+from transformers.pipelines import pipeline
 import pytest
 from question_answer import create_app
-import mock
 import psycopg2
-import unittest
+
+# initialize testing environment
+models = {}
+models = { 
+        "default": "distilled-bert",
+        "models": [
+            {
+                "name": "distilled-bert",
+                "tokenizer": "distilbert-base-uncased-distilled-squad",
+                "model": "distilbert-base-uncased-distilled-squad",
+                "pipeline": pipeline('question-answering', 
+                    model="distilbert-base-uncased-distilled-squad", 
+                    tokenizer="distilbert-base-uncased-distilled-squad")
+            }
+        ]
+    }
+if not os.path.exists('.ssl'):
+    os.makedirs('.ssl')
+filecontents = os.environ.get('PG_SSLROOTCERT')
+with open('.ssl/server-ca.pem', 'w') as f:
+    f.write(filecontents)
+filecontents = os.environ.get('PG_SSLCERT').replace("@", "=")
+with open('.ssl/client-cert.pem', 'w') as f:
+    f.write(filecontents)
+filecontents = os.environ.get('PG_SSLKEY').replace("@", "=")
+with open('.ssl/client-key.pem', 'w') as f:
+    f.write(filecontents)
+os.chmod(".ssl/server-ca.pem", 0o600)
+os.chmod(".ssl/client-cert.pem", 0o600)
+os.chmod(".ssl/client-key.pem", 0o600)
+sslmode = "sslmode=verify-ca"
+sslrootcert = "sslrootcert=.ssl/server-ca.pem"
+sslcert = "sslcert=.ssl/client-cert.pem"
+sslkey = "sslkey=.ssl/client-key.pem"
+hostaddr = "hostaddr={}".format(os.environ.get('PG_HOST'))
+user="user={}".format(os.environ.get('PG_USER'))
+password = "password={}".format(os.environ.get('PG_PASSWORD'))
+dbname = "mgmt590-webapp-db-tst"
+db_connect_string = " ".join([
+      sslmode,
+      sslrootcert,
+      sslcert,
+      sslkey,
+      hostaddr,
+      user,
+      password,
+      dbname
+    ])
+conn = psycopg2.connect(db_connect_string)
+cur = conn.cursor()
+cur.execute("""CREATE TABLE IF NOT EXISTS answers 
+        (question text, context text, model text, answer text, timestamp int)""")
+
 
 @pytest.fixture
 def client():
-    app = create_app()
+    app = create_app(models, conn)
     app.config["TESTING"] = True
     with app.test_client() as client:
         yield client
 
+
+# Health check route test
 def test_health(client):
     r = client.get("/")
     assert 200 == r.status_code
-    
-def test_list_model_route(client):
+
+
+# List model route test
+def test_model_list(client):
     r = client.get("/models")
     assert 200 == r.status_code
+    assert len(r.json) >= 1
 
-def test_list_model_incorrect_route(client):
-    r = client.get("/model")
-    assert 404 == r.status_code
-    print("Incorrect Route. Please Check")
-    
-def test_put_model_route(client):
-    modelData = {"name": "bert-tiny",
-                 "tokenizer": "mrm8488/bert-tiny-5-finetuned-squadv2",
-                 "model": "mrm8488/bert-tiny-5-finetuned-squadv2"}
-    r = client.put("/models", json=modelData)
-    #mock_response_data=b'[{"name":"distilled-bert","tokenizer":"distilbert-base-uncased-distilled-squad","model":"distilbert-base-uncased-distilled-squad"},{"name": "bert-tiny","tokenizer": "mrm8488/bert-tiny-5-finetuned-squadv2","model": "mrm8488/bert-tiny-5-finetuned-squadv2"}]\n'
-    assert 200 == r.status_code
-    #assert r.data == mock_response_data
 
-def test_put_model_incorrect_route(client):
-    modelData = {"name": "bert-tiny",
-                 "tokenizer": "mrm8488/bert-tiny-5-finetuned-squadv2",
-                 "model": "mrm8488/bert-tiny-5-finetuned-squadv2"}
-    r = client.put("/model", json=modelData)
-    #mock_response_data=b'[{"name":"distilled-bert","tokenizer":"distilbert-base-uncased-distilled-squad","model":"distilbert-base-uncased-distilled-squad"},{"name": "bert-tiny","tokenizer": "mrm8488/bert-tiny-5-finetuned-squadv2","model": "mrm8488/bert-tiny-5-finetuned-squadv2"}]\n'
-    assert 404 == r.status_code
-    #assert r.data == mock_response_data
-
-def test_put_model_incorrect_json(client):
-    modelData = {"name": "bert-tiny",
-                 "model": "mrm8488/bert-tiny-5-finetuned-squadv2"}
-    r = client.put("/models", json=modelData)
-    #mock_response_data=b'[{"name":"distilled-bert","tokenizer":"distilbert-base-uncased-distilled-squad","model":"distilbert-base-uncased-distilled-squad"},{"name": "bert-tiny","tokenizer": "mrm8488/bert-tiny-5-finetuned-squadv2","model": "mrm8488/bert-tiny-5-finetuned-squadv2"}]\n'
-    assert 200 == r.status_code
-    #assert r.data == mock_response_data
-    print("Missing parameter in the PUT request")
-    
-def test_del_model_route(client):
-    r = client.delete("/models?model=bert-tiny")
+# Add model route test
+def test_model_add(client):
+    payload = {
+        "name": "deepset-roberta",
+        "tokenizer": "deepset/roberta-base-squad2",
+        "model": "deepset/roberta-base-squad2"
+    }
+    r = client.put("/models", json=payload)
     assert 200 == r.status_code
 
-def test_get_models(client):
-    mock_response_data=b'[{"name":"distilled-bert","tokenizer":"distilbert-base-uncased-distilled-squad","model":"distilbert-base-uncased-distilled-squad"}]\n'
-    response = client.get('/models')
-    assert response.status_code == 200
-    assert response.data == mock_response_data
 
-#@mock.patch('psycopg2.connect')
-#def test_list_answers():
-#        mock_connect().__enter__().cursor().__enter__().fetchall.return_value = [(1622203201, 'bert-tiny', 'bully Leigh-Ann Galloway',  'who did holly matthews play in waterloo rd?',  "She attended the British drama school East 15 in 2005,and left after winning a high-profile role in the BBC drama Waterloo Road, playing the bully Leigh-Ann Galloway.[6] Since that role, Matthews has continued to act in BBC's Doctors, playing Connie Whitfield; in ITV's The Bill playing drug addict Josie Clarke; and she was back in the BBC soap Doctors in 2009, playing Tansy Flack.")]
-#        mock_connect().__enter__().cursor().__enter__().execute.assert_called_with('SELECT * FROM question_answer WHERE qa_timestamp between %s and %s', (1000000000,5000000000,))
-#        headers = {'Content-Type': 'application/json'}
-#        response = client.get("/answer?model=bert-tiny&start=1000000000&end=5000000000", headers=headers)
- 
+# Delete model route test
+def test_model_delete(client):
+    r = client.delete("/models?model=deepset-roberta")
+    assert 200 == r.status_code
+
+
+# Answer question route test
+def test_answer(client):
+    payload = {
+        "question": "who did holly matthews play in waterloo rd?",
+        "context": "She attended the British drama school East 15 in 2005, and left after winning a high-profile role in the BBC drama Waterloo Road, playing the bully Leigh-Ann Galloway.[6] Since that role, Matthews has continued to act in BBC's Doctors, playing Connie Whitfield; in ITV's The Bill playing drug addict Josie Clarke; and she was back in the BBC soap Doctors in 2009, playing Tansy Flack."
+    }
+    r = client.post("/answer", json=payload)
+    assert 200 == r.status_code
+
+
+# List answers route test
+def test_list_answers(client):
+    r = client.get("/answer?start=1622125686&end=1722298486")
+    assert 200 == r.status_code
+    assert len(r.json) >= 1

@@ -11,6 +11,12 @@ env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT }}
   SERVICE: mgmt590-am-rest-api
   REGION: us-central1
+  PG_SSLROOTCERT: ${{ secrets.PG_SSLROOTCERT }}
+  PG_SSLCLIENT_CERT: ${{ secrets.PG_SSLCLIENT_CERT }}
+  PG_SSL_CLIENT_KEY: ${{ secrets.PG_SSL_CLIENT_KEY }}
+  PG_HOST: ${{ secrets.PG_HOST }}
+  PG_USER: ${{ secrets.PG_USER }}
+  PG_USER_PASSWORD: ${{ secrets.PG_USER_PASSWORD}}
 
 jobs:
   deploy:
@@ -36,7 +42,7 @@ jobs:
         
     - name: Test Container
       run: |-
-        docker run -w /app gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{  github.sha }} pytest -v
+        docker run -w /app -e PG_SSLROOTCERT=${{ env.PG_SSLROOTCERT }} -e PG_SSLCLIENT_CERT=${{ env.PG_SSLCLIENT_CERT }} -e PG_SSL_CLIENT_KEY=${{ env.PG_SSL_CLIENT_KEY }} -e PG_HOST=${{ env.PG_HOST }} -e PG_USER=${{ env.PG_USER }} -e PG_USER_PASSWORD=${{ env.PG_USER_PASSWORD }} gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{  github.sha }} pytest -v
     
     - name: Deploy to Cloud Run
       id: deploy
