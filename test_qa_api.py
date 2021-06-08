@@ -26,10 +26,10 @@ if not os.path.exists('.ssl'):
 filecontents = os.environ.get('PG_SSLROOTCERT')
 with open('.ssl/server-ca.pem', 'w') as f:
     f.write(filecontents)
-filecontents = os.environ.get('PG_SSLCERT').replace("@", "=")
+filecontents = os.environ.get('PG_SSLCLIENT_CERT').replace("@", "=")
 with open('.ssl/client-cert.pem', 'w') as f:
     f.write(filecontents)
-filecontents = os.environ.get('PG_SSLKEY').replace("@", "=")
+filecontents = os.environ.get('PG_SSL_CLIENT_KEY').replace("@", "=")
 with open('.ssl/client-key.pem', 'w') as f:
     f.write(filecontents)
 os.chmod(".ssl/server-ca.pem", 0o600)
