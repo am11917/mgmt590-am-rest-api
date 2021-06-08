@@ -53,15 +53,15 @@ db_connect_string = " ".join([
       password,
       dbname
     ])
-con = psycopg2.connect(db_connect_string)
-cur = con.cursor()
+conn = psycopg2.connect(db_connect_string)
+cur = conn.cursor()
 cur.execute("""CREATE TABLE IF NOT EXISTS answers 
         (question text, context text, model text, answer text, timestamp int)""")
 
 
 @pytest.fixture
 def client():
-    app = create_app(models, con)
+    app = create_app(models, conn)
     app.config["TESTING"] = True
     with app.test_client() as client:
         yield client
