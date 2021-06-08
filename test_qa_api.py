@@ -3,7 +3,7 @@ import time
 
 from transformers.pipelines import pipeline
 import pytest
-from answer import create_app
+from question_answer import create_app
 import psycopg2
 
 # initialize testing environment
