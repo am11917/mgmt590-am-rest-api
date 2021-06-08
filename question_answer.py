@@ -11,23 +11,10 @@ from flask import Flask
 from flask import request
 from flask import jsonify
 
+# Create a variable that will hold our models in memory
+models = {}
 
-#Creating a list of dictionary of models
-models = { 
-        "default": "distilled-bert",
-        "models": [
-            {
-                "name": "distilled-bert",
-                "tokenizer": "distilbert-base-uncased-distilled-squad",
-                "model": "distilbert-base-uncased-distilled-squad",
-                "pipeline": pipeline('question-answering', 
-                    model="distilbert-base-uncased-distilled-squad", 
-                    tokenizer="distilbert-base-uncased-distilled-squad")
-            }
-        ]
-    }
-
-def create_app():
+def create_app(models, conn):
     # Create my flask app
     app = Flask(__name__)
     app.config['JSON_SORT_KEYS'] = False
@@ -138,8 +125,6 @@ def create_app():
         answer, model_name = answer_question(request.args.get('model'), 
                 data['question'], data['context'])
         
-        # connect to db 
-        conn = create_connection(dbconnect)
         
         #check if the table exists 
         #if not then create table before the first execution
@@ -174,8 +159,6 @@ def create_app():
     @app.route("/answer", methods=['GET'])
     def list_answers():
         
-        # connect to db
-        conn = create_connection(dbconnect)
         # try and catch for exception handling of mandatory parameters
         try:
             start_timestamp = int(request.args['start'])
@@ -362,8 +345,6 @@ def validate_model(model_name):
 # Run if running "python question_answer.py"
 if __name__ == '__main__':
     
-    
-    
     # Initialize our default model.
     models = { 
         "default": "distilled-bert",
@@ -381,35 +362,33 @@ if __name__ == '__main__':
     
     #setting the database connection parameters
     sslmode="sslmode=verify-ca"
-    sslrootcert_var=os.environ.get('PG_SSLROOTCERT')
-    sslrootcert_var=sslrootcert_var.replace('@','=')
-    file = open("/server-ca.pem", "w")
-    file.write(sslrootcert_var)
-    file.close()
-    os.chmod("/server-ca.pem",stat.S_IRUSR)
-    os.chmod("/server-ca.pem",stat.S_IWUSR)
-    sslcert_var=os.environ.get('PG_SSLCLIENT_CERT')
-    sslcert_var=sslcert_var.replace('@','=')
-    file = open("/client-cert.pem", "w")
-    file.write(sslcert_var)
-    file.close()
-    os.chmod("/client-cert.pem",stat.S_IRUSR)
-    os.chmod("/client-cert.pem",stat.S_IWUSR)
-    sslkey_var=os.environ.get('PG_SSL_CLIENT_KEY')
-    file = open("/client-key.pem", "w")
-    file.write(sslkey_var)
-    file.close()
-    os.chmod("/client-key.pem",stat.S_IRUSR)
-    os.chmod("/client-key.pem",stat.S_IWUSR)
+    if not os.path.exists('.ssl'):
+        os.makedirs('.ssl')
+    
+    filecontents = os.environ.get('PG_SSLROOTCERT')
+    with open('.ssl/server-ca.pem', 'w') as f:
+        f.write(filecontents)
+
+    filecontents = os.environ.get('PG_SSLCERT').replace("@", "=")
+    with open('.ssl/client-cert.pem', 'w') as f:
+        f.write(filecontents)
+
+    filecontents = os.environ.get('PG_SSLKEY').replace("@", "=")
+    with open('.ssl/client-key.pem', 'w') as f:
+        f.write(filecontents)
+
+    os.chmod(".ssl/server-ca.pem", 0o600)
+    os.chmod(".ssl/client-cert.pem", 0o600)
+    os.chmod(".ssl/client-key.pem", 0o600)
     hostaddr="hostaddr={}".format(os.environ.get('PG_HOST'))
     port="port=5432"
     user="user={}".format(os.environ.get('PG_USER'))
     dbname="dbname={}".format(os.environ.get('PG_DBNAME'))
     password="password={}".format(os.environ.get('PG_USER_PASSWORD'))
     
-    sslrootcert="sslrootcert=/server-ca.pem"
-    sslcert="sslcert=/client-cert.pem"
-    sslkey="sslkey=/client-key.pem"
+    sslrootcert="sslrootcert=.ssl/server-ca.pem"
+    sslcert="sslcert=.ssl/client-cert.pem"
+    sslkey="sslkey=.ssl/client-key.pem"
     
     dbconnect = " ".join([
     sslmode,
@@ -423,7 +402,10 @@ if __name__ == '__main__':
     dbname
     ])
     
+    # connect to db
+    conn = create_connection(dbconnect)
+        
     #Create the flask app
-    app = create_app()
+    app = create_app(models, conn)
     # Run our Flask app and start listening for requests!
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 8080)), threaded=True)
