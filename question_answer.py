@@ -13,6 +13,7 @@ from flask import jsonify
 import pandas as pd
 from werkzeug.utils import secure_filename
 from google.cloud import storage
+import base64
 
 # Create a variable that will hold our models in memory
 models = { 
