@@ -33,7 +33,7 @@ models = {
 #setting gcs creds for access to bucket
 filecontents = os.environ.get('GCS_CREDS')
 decoded_creds = base64.b64decode(filecontents)
-with open('/app/creds.json', 'w') as f:
+with open('/app/creds.json', 'wb') as f:
     f.write(decoded_creds)
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = '/app/creds.json'
 
