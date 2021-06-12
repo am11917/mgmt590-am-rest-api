@@ -1,8 +1,7 @@
 ## libraries with version ##
 transformers==4.6.1
 flask==2.0.1
-pysqlite3
-psycopg2-binary
+psycopg2-binary==2.8.4
 pytest==6.2.2
-mock
-unittest2
+pandas
+google-cloud-storage
