@@ -10,6 +10,9 @@ from transformers import AutoModelForQuestionAnswering, AutoTokenizer
 from flask import Flask
 from flask import request
 from flask import jsonify
+import pandas as pd
+from werkzeug.utils import secure_filename
+from google.cloud import storage
 
 # Create a variable that will hold our models in memory
 models = { 
@@ -25,6 +28,18 @@ models = {
         }
     ]
 }
+
+#setting gcs creds for access to bucket
+filecontents = os.environ.get('GCS_CREDS')
+decoded_creds = base64.b64decode(filecontents)
+with open('/app/creds.json', 'w') as f:
+    f.write(decoded_creds)
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = '/app/creds.json'
+
+#getting bucket details
+bucket_name = os.environ.get('STORAGE_BUCKET')
+storage_client = storage.Client()
+bucket = storage_client.get_bucket(bucket_name)
 
 def create_app(models, conn):
     # Create my flask app
@@ -209,6 +224,21 @@ def create_app(models, conn):
                 return ("Error: Table doesn't exist.Please Check")
         
         return output
+    
+    @app.route("/upload", methods = ['POST'])
+    def upload_file():
+        if 'file' not in request.files:
+            return('No file Provided')
+        
+        if file and allowed_file(file.filename):
+            
+            dataFrame = pd.read_csv(file)
+            timestamp = int(time.time())
+            fileName = 'question_context'+'_'+str(timestamp)+'.csv'
+            csvFile = dataFrame.to_csv(fileName, index=False)
+            response = uploadOneFile(bucket,fileName)
+        return jsonify({"status":"File Uploaded Successfully","status code":200})
+    
     return app
 
 
@@ -353,7 +383,25 @@ def validate_model(model_name):
 
     return model_name in model_names
 
-    
+#9. function to check the file extension
+ALLOWED_EXTENSIONS = {'csv'}
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+#10. function to upload file
+def uploadOneFile(bucket,filename):
+    logging.info('Inside File Uploads')
+    timestamp = int(time.time())
+    try:
+        blob = bucket.blob(filename)
+        response = blob.upload_from_filename(filename)
+        
+    except Exception as ex:
+        logging.error("Exception occurred while trying to upload files " , ex)
+    return response
+
 # Run if running "python question_answer.py"
 if __name__ == '__main__':
     
