@@ -393,7 +393,7 @@ def allowed_file(filename):
 #10. function to upload file
 def uploadOneFile(bucket,filename):
     logging.info('Inside File Uploads')
-    timestamp = int(time.time())
+    
     try:
         blob = bucket.blob(filename)
         response = blob.upload_from_filename(filename)
