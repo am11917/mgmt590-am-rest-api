@@ -230,7 +230,7 @@ def create_app(models, conn):
     def upload_file():
         if 'file' not in request.files:
             return('No file Provided')
-        
+        file = request.files['file']
         if file and allowed_file(file.filename):
             
             dataFrame = pd.read_csv(file)
